@@ -4,7 +4,6 @@
 
 - Courses : https://jalammar.github.io/illustrated-gpt2/
 - On masked language models : https://www.ibm.com/think/topics/masked-language-model
-- 
 
 ## On tokenization 
 
@@ -15,11 +14,12 @@
 ## On Constrained Decoding
 
 - Introductory guide : https://www.aidancooper.co.uk/constrained-decoding/
-- CD on JSON : https://www.emergentmind.com/topics/constrained-decoding-json-mode
+- Constraint decoding on JSON : https://www.emergentmind.com/topics/constrained-decoding-json-mode
 
 ## Miscellaneous
 
 - JSON Schema : https://json-schema.org/learn/getting-started-step-by-step
+- JSON Validator : https://jsonlint.com
 - Pydantic doc : https://pydantic.dev/docs/validation/latest/get-started/
 - Regex doc : https://docs.python.org/3/howto/regex.html
 
