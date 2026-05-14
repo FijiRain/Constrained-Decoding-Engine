@@ -17,6 +17,8 @@ def output(model: Small_LLM_Model, prompt: str,
                   "- Generate the function NAME and its PARAMETERS\n"
                   "- Output format: {\"name\": \"function_name\", "
                   "\"parameters\": {...}}\n\n"
+                  "If you need to use a regex "
+                  "call the correct REGEX expression\n"
                   f"Available functions:\n{functions}\n\n"
                   f"Prompt: {prompt}\n"
                   f"Answer: ")
@@ -41,10 +43,10 @@ def output(model: Small_LLM_Model, prompt: str,
     encoded_params = enforce_params(model, encoded_pre_prompt,
                                     encoded_template, right_fn)
 
-    answer = {
+    answer: dict[str, object] = {
         "prompt": prompt,
         "name": model.decode(encoded_name),
-        "parameters": {model.decode(encoded_params)},
+        "parameters": encoded_params,
     }
     return answer
 
@@ -80,16 +82,16 @@ def enforce_name(model: Small_LLM_Model, pre_prompt: list[int],
                 finished = True
 
         # Print LLM generated token
-        print(model.decode(chosen_name_tokens))
+        # print(model.decode(chosen_name_tokens))
 
     return chosen_name_tokens
 
 
 def enforce_params(model: Small_LLM_Model, pre_prompt: list[int],
-                   template: list[int], fn: Function) -> list[int]:
+                   template: list[int], fn: Function) -> dict[str, object]:
     context = pre_prompt + template
     len_params = len(fn.parameters)
-    res: list[int] = []
+    res: dict[str, object] = {}
 
     actual_nb_param = 0
     for k, v in fn.parameters.items():
@@ -97,40 +99,60 @@ def enforce_params(model: Small_LLM_Model, pre_prompt: list[int],
         actual_nb_param += 1
         encoded_key = model.encode(f'"{k}": ')[0].tolist()
         context += encoded_key
-        res += encoded_key
 
         if v.type == "number":
             allowed_char = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
                             ".", "-"]
             allowed_token = [model.encode(i)[0].tolist()[0]
                              for i in allowed_char]
+            numeric_tokens: list[int] = []
             while True:
                 logits = model.get_logits_from_input_ids(
                     context + chosen_tokens)
                 next_token = int(np.argmax(logits))
                 if next_token in allowed_token:
                     chosen_tokens.append(next_token)
-                    res.append(next_token)
+                    numeric_tokens.append(next_token)
                 else:
                     break
-            if actual_nb_param != len_params:
-                comma = model.encode(",")[0].tolist()
-                chosen_tokens += comma
-                res += comma
-            else:
-                bracket = model.encode("}")[0].tolist()
-                chosen_tokens += bracket
-                res += bracket
+            res[k] = float(model.decode(numeric_tokens))
             context += chosen_tokens
+            add_separator(model, actual_nb_param, len_params, chosen_tokens)
 
         elif v.type == "string":
-            ...
+            str_tokens: list[int] = []
+            context += model.encode('"')[0].tolist()
+            chosen_tokens += model.encode('"')[0].tolist()
+
+            while True:
+                logits = model.get_logits_from_input_ids(
+                    context + chosen_tokens)
+                next_token = int(np.argmax(logits))
+                if '"' in model.decode([next_token]):
+                    chosen_tokens.append(next_token)
+                    # str_tokens.append(next_token)
+                    break
+                else:
+                    chosen_tokens.append(next_token)
+                    str_tokens.append(next_token)
+            res[k] = model.decode(str_tokens)
+            context += chosen_tokens
+            add_separator(model, actual_nb_param, len_params, chosen_tokens)
+
         else:
             raise ValueError("Unknown parameter type in functions_definition.")
-
-    print(model.decode(res))
-
+    print(res)
     return res
+
+
+def add_separator(model: Small_LLM_Model, actual_param: int,
+                  total_param: int, token_list: list[int]) -> None:
+    if actual_param != total_param:
+        comma = model.encode(",")[0].tolist()
+        token_list += comma
+    else:
+        bracket = model.encode("}")[0].tolist()
+        token_list += bracket
 
 
 # a virer et mettre dans le main avec --input etc
@@ -149,15 +171,6 @@ for p in prompts_list:
     final_JSON.append(res)
 
 with open("data/input/function_calling_results.json", "w") as f:
-    json.dump(final_JSON, f, indent=2)
+    json.dump(final_JSON, f, indent=4)
 
-print(final_JSON)
-
-
-
-# logits = model.get_logits_from_input_ids(
-#     context + chosen_nb_tokens)
-# masked = [weight if token in allowed_token else -inf
-#           for token, weight in enumerate(logits)]
-# next_token = int(np.argmax(masked))
-# chosen_nb_tokens.append(next_token)
+# print(final_JSON)

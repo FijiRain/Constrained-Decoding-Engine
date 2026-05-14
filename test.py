@@ -1,14 +1,4 @@
-test = {
-    "name": "fn_greet",
-    "description": "Generate a greeting message for a person by name.",
-    "parameters": {
-      "name": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
-  }
+from llm_sdk import Small_LLM_Model
 
-print(len(test["parameters"]))
+i = Small_LLM_Model()
+print(i.get_path_to_vocab_file())
