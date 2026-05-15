@@ -1,8 +1,9 @@
-from JSON_parsing import load_prompts, load_functions, Function
+from .JSON_parsing import Function, Prompt
 from llm_sdk import Small_LLM_Model
 from math import inf
 import numpy as np
 import json
+import pathlib
 
 
 def output(model: Small_LLM_Model, prompt: str,
@@ -155,22 +156,18 @@ def add_separator(model: Small_LLM_Model, actual_param: int,
         token_list += bracket
 
 
-# a virer et mettre dans le main avec --input etc
-f_call_path = "data/input/function_calling_tests.json"
-f_def_path = "data/input/functions_definition.json"
+def run(prompts: list[Prompt], fn: list[Function], output_path: str) -> None:
+    model = Small_LLM_Model()
+    final_JSON = []
 
-prompts_list = load_prompts(f_call_path)
-functions_list = load_functions(f_def_path)
+    # For each prompt we generate a type JSON output
+    for p in prompts:
+        res = output(model, p.prompt, fn)
+        final_JSON.append(res)
 
-model = Small_LLM_Model()
-final_JSON = []
+    # Create the output directory
+    output_file = pathlib.Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
 
-# Pour chaque prompt on generera une sortie type JSON
-for p in prompts_list:
-    res = output(model, p.prompt, functions_list)
-    final_JSON.append(res)
-
-with open("data/input/function_calling_results.json", "w") as f:
-    json.dump(final_JSON, f, indent=4)
-
-# print(final_JSON)
+    with output_file.open("w") as f:
+        json.dump(final_JSON, f, indent=4)

@@ -17,6 +17,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.uv_cache
+.hf_cache
 
 # Environments
 .env

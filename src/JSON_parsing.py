@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 import json
 import sys
+from typing import Any
 
 
 class Parameters(BaseModel):
@@ -18,13 +19,24 @@ class Prompt(BaseModel):
     prompt: str
 
 
-def load_JSON(path: str) -> list:
+def load_JSON(path: str) -> list[dict[str, Any]]:
     try:
         with open(path, 'r') as f:
-            return json.load(f)
+            data: object = json.load(f)
     except FileNotFoundError:
         print("[ERROR] - File not found.")
         sys.exit(1)
+
+    if not isinstance(data, list):
+        raise ValueError("[ERROR] - JSON root must be a list.")
+
+    items: list[dict[str, Any]] = []
+    for item in data:
+        if not isinstance(item, dict):
+            raise ValueError("[ERROR] - JSON items must be objects.")
+        items.append(item)
+
+    return items
 
 
 def load_functions(path: str) -> list[Function]:
