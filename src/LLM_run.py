@@ -97,6 +97,8 @@ def enforce_name(model: Small_LLM_Model, pre_prompt: list[int],
         next = int(np.argmax(masked))
 
         chosen_name_tokens.append(next)
+        print("\r" + model.decode(chosen_name_tokens) + " ", end="",
+              flush=True)
 
         # Check if a full function name has been generated
         for function in encoded_fn_names:
@@ -163,7 +165,6 @@ def enforce_params(model: Small_LLM_Model, pre_prompt: list[int],
                 next_token = int(np.argmax(logits))
                 if '"' in model.decode([next_token]):
                     chosen_tokens.append(next_token)
-                    # str_tokens.append(next_token)
                     break
                 else:
                     chosen_tokens.append(next_token)

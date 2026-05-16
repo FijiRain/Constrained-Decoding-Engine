@@ -93,6 +93,9 @@ def load_prompts(path: str) -> list[Prompt]:
     """
     try:
         res = [Prompt(**item) for item in load_JSON(path)]
+        for prompt in res:
+            if prompt.prompt == "":
+                raise ValueError("Prompt cannot be an empty string")
     except Exception as e:
         print(f"[ERROR] - Incorrect prompt detected, detail:\n{e}.")
         sys.exit(1)
