@@ -4,6 +4,14 @@ from .LLM_run import run
 
 
 def main() -> None:
+    """Run the command-line interface.
+
+    Parses the command-line arguments, loads the input data, and writes the
+    generated results to the output file.
+
+    Returns:
+        None: This function is executed for its side effects.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--input",
                         default="data/input/function_calling_tests.json")

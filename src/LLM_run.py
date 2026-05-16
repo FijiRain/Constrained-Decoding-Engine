@@ -8,6 +8,16 @@ import pathlib
 
 def output(model: Small_LLM_Model, prompt: str,
            fn_list: list[Function]) -> dict[str, object]:
+    """Generate the structured answer for one prompt.
+
+    Args:
+        model: The language model used for token generation.
+        prompt: The prompt to resolve.
+        fn_list: The available function definitions.
+
+    Returns:
+        dict[str, object]: The generated prompt, name, and parameters.
+    """
     main_template = "{" + '"prompt": ' + json.dumps(prompt) + ', "name": '
     functions = {fn.name: fn.model_dump() for fn in fn_list}
     pre_prompt = ("You are a function calling agent.\n"
@@ -54,6 +64,17 @@ def output(model: Small_LLM_Model, prompt: str,
 
 def enforce_name(model: Small_LLM_Model, pre_prompt: list[int],
                  template: list[int], fn_list: list[Function]) -> list[int]:
+    """Constrain generation to one of the available function names.
+
+    Args:
+        model: The language model used for token selection.
+        pre_prompt: The encoded prompt context.
+        template: The encoded response template.
+        fn_list: The available function definitions.
+
+    Returns:
+        list[int]: The encoded function name tokens.
+    """
     encoded_fn_names = [model.encode(i.name)[0].tolist() for i in fn_list]
     chosen_name_tokens: list[int] = []
 
@@ -90,6 +111,17 @@ def enforce_name(model: Small_LLM_Model, pre_prompt: list[int],
 
 def enforce_params(model: Small_LLM_Model, pre_prompt: list[int],
                    template: list[int], fn: Function) -> dict[str, object]:
+    """Generate parameters that match the selected function schema.
+
+    Args:
+        model: The language model used for token generation.
+        pre_prompt: The encoded prompt context.
+        template: The encoded response template.
+        fn: The selected function definition.
+
+    Returns:
+        dict[str, object]: The generated parameter values.
+    """
     context = pre_prompt + template
     len_params = len(fn.parameters)
     res: dict[str, object] = {}
@@ -101,7 +133,7 @@ def enforce_params(model: Small_LLM_Model, pre_prompt: list[int],
         encoded_key = model.encode(f'"{k}": ')[0].tolist()
         context += encoded_key
 
-        if v.type == "number":
+        if v.type == "number" or v.type == "integer":
             allowed_char = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
                             ".", "-"]
             allowed_token = [model.encode(i)[0].tolist()[0]
@@ -148,6 +180,17 @@ def enforce_params(model: Small_LLM_Model, pre_prompt: list[int],
 
 def add_separator(model: Small_LLM_Model, actual_param: int,
                   total_param: int, token_list: list[int]) -> None:
+    """Append the next JSON separator token for the current parameter.
+
+    Args:
+        model: The language model used to encode separator tokens.
+        actual_param: The current parameter index.
+        total_param: The total number of parameters.
+        token_list: The token buffer to update.
+
+    Returns:
+        None: The token list is updated in place.
+    """
     if actual_param != total_param:
         comma = model.encode(",")[0].tolist()
         token_list += comma
@@ -157,6 +200,16 @@ def add_separator(model: Small_LLM_Model, actual_param: int,
 
 
 def run(prompts: list[Prompt], fn: list[Function], output_path: str) -> None:
+    """Process all prompts and write the results to disk.
+
+    Args:
+        prompts: The prompts to process.
+        fn: The available function definitions.
+        output_path: The destination file path.
+
+    Returns:
+        None: The results are written to disk.
+    """
     model = Small_LLM_Model()
     final_JSON = []
 
