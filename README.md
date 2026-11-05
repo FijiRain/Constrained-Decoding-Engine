@@ -1,5 +1,3 @@
-*This project has been created as part of the 42 curriculum by tmoga.*
-
 # Call Me Maybe
 
 ## Description
@@ -14,7 +12,7 @@ The core challenge of this project is **constrained decoding**: rather than prom
 
 - Python 3.10+
 - [uv](https://github.com/astral-sh/uv) package manager
-- The `llm_sdk` package (provided as part of the 42 project)
+- The `llm_sdk` package
 
 ### Installation
 
@@ -156,7 +154,7 @@ Between each phase, the full generation history is passed back to the model as c
 
 ## Testing Strategy
 
-The program was validated against both the provided sample inputs and the private test set from the 42 moulinette. Each output JSON was inspected manually to verify:
+The program was validated against both the provided sample inputs and some private test. Each output JSON was inspected manually to verify:
 
 - Correct function name selection for each prompt
 - Correct parameter names matching the function definition
