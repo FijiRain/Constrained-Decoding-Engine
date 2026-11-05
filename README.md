@@ -1,8 +1,8 @@
-# Call Me Maybe
+# Constrained-Decoding-Engine
 
 ## Description
 
-Call Me Maybe is a function calling agent built on top of a small language model (Qwen3-0.6B). Given a natural language prompt and a set of function definitions, the program determines which function to call and extracts the correct arguments with the correct types, outputting a structured JSON file.
+This program is a function calling agent built on top of a small language model (Qwen3-0.6B). Given a natural language prompt and a set of function definitions, the program determines which function to call and extracts the correct arguments with the correct types, outputting a structured JSON file.
 
 The core challenge of this project is **constrained decoding**: rather than prompting the model and hoping for valid JSON output, the program intervenes at each token generation step to guarantee that the output conforms to a given schema. This is achieved by masking invalid tokens in the logit distribution before sampling, forcing the model to only generate tokens that are structurally valid at each position.
 
@@ -20,7 +20,7 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone <repository_url>
-cd call_me_maybe
+cd constrained-decoding-engine
 uv sync
 ```
 
